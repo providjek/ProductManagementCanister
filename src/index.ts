@@ -3,7 +3,6 @@ import { Server, StableBTreeMap, ic } from 'azle';
 import express from 'express';
 
 
-
 const supplierStorage = StableBTreeMap<string, Supplier>(0);
 const productStorage = StableBTreeMap<string, Product>(1);
 
@@ -18,60 +17,71 @@ export default Server(() => {
    
    //Add a Supplier
    app.post('/suppliers', (req, res) => {
-   const { name, contactInfo } = req.body;
-   const id = uuidv4();
-   const newSupplier = new Supplier(id, name, contactInfo);
-   supplierStorage.insert(newSupplier.supplierId, newSupplier);
-   res.json(newSupplier);
+      const { name, contactInfo } = req.body;
+
+      if (!name || !contactInfo || typeof name !== 'string' || typeof contactInfo !== 'string'){
+        return res.status(400).send("Bad request: Check data types and required fields!");
+      }
+      const supplierId =  uuidv4()
+      const newSupplier = new Supplier(supplierId, name, contactInfo);
+      supplierStorage.insert(newSupplier.supplierId, newSupplier);
+      res.json(newSupplier);
    });
 
    //Get all suppliers
    app.get('/suppliers', (req, res) => {
-   res.json(supplierStorage.values());
+      res.json(supplierStorage.values());
    });
 
    //Get a supplier by id
    app.get('/suppliers/:id', (req, res) => {
-   const supplierId = req.params.id;
-   const supplier = supplierStorage.get(supplierId);
+      const supplierId = req.params.id;
+      const supplier = supplierStorage.get(supplierId);
 
-   if ("None" in supplier) {
-      res.status(404).send(`the supplier with id=${supplierId} not found`);
-   } else {
-      res.json(supplier.Some);
-   }
+      if ("None" in supplier) {
+          res.status(404).send(`the supplier with id=${supplierId} not found`);
+      } else {
+          res.json(supplier.Some);
+      }
 
    });
 
    //Update a supplier
    app.put('/suppliers/:id', (req, res) => {
-   const supplierId = req.params.id;
-   const existingSupplier = supplierStorage.get(supplierId);
-   if ("None" in existingSupplier) {
-      res.status(400).send(`couldn't update a supplier with id=${supplierId}. Supplier not found`);
-   } else {
-      const supplier = existingSupplier.Some;
-      const updatedsupplier = { ...supplier, ...req.body, updatedAt: getCurrentDate()};
-      supplierStorage.insert(supplier.supplierId, updatedsupplier);
-      res.json(updatedsupplier);
-   }
+      const supplierId = req.params.id;
+      const existingSupplier = supplierStorage.get(supplierId);
+      if ("None" in existingSupplier) {
+        res.status(400).send(`couldn't update a supplier with id=${supplierId}. Supplier not found`);
+      } else {
+        const supplier = existingSupplier.Some;
+        if (!supplier.name || !supplier.contactInfo || typeof supplier.name !== 'string' || typeof !supplier.contactInfo !== 'string'){
+          return res.status(400).send("Bad request: Check data types and required fields!");
+        }
+        const updatedsupplier = { ...supplier, ...req.body, updatedAt: getCurrentDate()};
+        supplierStorage.insert(supplier.supplierId, updatedsupplier);
+        res.json(updatedsupplier);
+      }
    });
 
    //Delete a supplier
    app.delete('/suppliers/:id', (req, res) => {
-   const supplierId = req.params.id;
-   const deletedSupplier = supplierStorage.remove(supplierId);
-   if ("None" in deletedSupplier) {
-      res.status(400).send(`couldn't delete a supplier with id=${supplierId}. Supplier not found`);
-   } else {
-      res.status(200).send(`Supplier id=${supplierId} successfly deleted`);
-   }
+      const supplierId = req.params.id;
+      const deletedSupplier = supplierStorage.remove(supplierId);
+      if ("None" in deletedSupplier) {
+          res.status(400).send(`couldn't delete a supplier with id=${supplierId}. Supplier not found`);
+      } else {
+          res.status(200).send(`Supplier id=${supplierId} successfly deleted`);
+      }
    });
 
    
 // add a product 
 app.post('/products', (req, res) => {
    const { name, description, price, quantity, supplierId } = req.body;
+   if(!name || !description || !price || !quantity || !supplierId ||
+    typeof name !== 'string' || typeof description !== 'string' || typeof price !== 'number' || typeof quantity !== 'number' || typeof supplierId !== 'string'){
+      return res.status(400).send("Bad request: Check data types and required fields!");
+    }
    const productId = uuidv4();
    const newProduct = new Product(productId, name, description, price, quantity, supplierId);
    productStorage.insert(newProduct.productId, newProduct);
@@ -112,6 +122,10 @@ app.post('/products', (req, res) => {
      res.status(404).send(`the product with id=${productId} not found`); 
    } else {
      const product = existingProduct.Some;
+     if(!product.name || !product.description || !product.price || !product.quantity || 
+      typeof product.name !== 'string' || typeof product.description !== 'string' || typeof product.price !== 'number' || typeof product.quantity !== 'number'){
+        return res.status(400).send("Bad request: Check data types and required fields!");
+      }
      const updatedProduct = { ...product, ...req.body, updatedAt: getCurrentDate()};
       productStorage.insert(product.productId, updatedProduct);
      res.json(updatedProduct);
@@ -156,11 +170,8 @@ app.post('/products', (req, res) => {
  });
  
  // Starting server...
- const PORT = 3000;
- return app.listen(PORT, () => {
-   console.log(`Server started on port ${PORT}`);
- });
- 
+ return app.listen()
+
 
 }); // to close the Server function.
 
