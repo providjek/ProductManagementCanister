@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Server, StableBTreeMap, ic } from 'azle';
-import express from 'express';
+import express, { Request, Response } from 'express';
 
 
 
@@ -17,7 +17,7 @@ export default Server(() => {
    app.use(express.json());
    
    //Add a Supplier
-   app.post('/suppliers', (req, res) => {
+   app.post('/suppliers', (req: Request, res: Response) => {
    const { name, contactInfo } = req.body;
    const id = uuidv4();
    const newSupplier = new Supplier(id, name, contactInfo);
@@ -26,12 +26,12 @@ export default Server(() => {
    });
 
    //Get all suppliers
-   app.get('/suppliers', (req, res) => {
+   app.get('/suppliers', (req: Request, res: Response) => {
    res.json(supplierStorage.values());
    });
 
    //Get a supplier by id
-   app.get('/suppliers/:id', (req, res) => {
+   app.get('/suppliers/:id', (req: Request, res: Response) => {
    const supplierId = req.params.id;
    const supplier = supplierStorage.get(supplierId);
 
@@ -44,7 +44,7 @@ export default Server(() => {
    });
 
    //Update a supplier
-   app.put('/suppliers/:id', (req, res) => {
+   app.put('/suppliers/:id', (req: Request, res: Response) => {
    const supplierId = req.params.id;
    const existingSupplier = supplierStorage.get(supplierId);
    if ("None" in existingSupplier) {
@@ -58,7 +58,7 @@ export default Server(() => {
    });
 
    //Delete a supplier
-   app.delete('/suppliers/:id', (req, res) => {
+   app.delete('/suppliers/:id', (req: Request, res: Response) => {
    const supplierId = req.params.id;
    const deletedSupplier = supplierStorage.remove(supplierId);
    if ("None" in deletedSupplier) {
@@ -70,7 +70,7 @@ export default Server(() => {
 
    
 // add a product 
-app.post('/products', (req, res) => {
+app.post('/products', (req: Request, res: Response) => {
    const { name, description, price, quantity, supplierId } = req.body;
    const productId = uuidv4();
    const newProduct = new Product(productId, name, description, price, quantity, supplierId);
@@ -79,12 +79,12 @@ app.post('/products', (req, res) => {
  });
  
  // Get all products 
- app.get('/products', (req, res) => {
+ app.get('/products', (req: Request, res: Response) => {
    res.json(productStorage.values());
  });
  
  // Get a product with supplier details
- app.get('/products/:id', (req, res) => {
+ app.get('/products/:id', (req: Request, res: Response) => {
    const productId = req.params.id;
    const product = productStorage.get(productId);
    
@@ -105,7 +105,7 @@ app.post('/products', (req, res) => {
  });
  
  // Update  a product
- app.put('/products/:id', (req, res) => {
+ app.put('/products/:id', (req: Request, res: Response) => {
    const productId = req.params.id;
    const existingProduct = productStorage.get(productId);
    if ("None" in existingProduct) {
@@ -119,7 +119,7 @@ app.post('/products', (req, res) => {
  });
  
  // Delete a product by id
- app.delete('/products/:id', (req, res) => {
+ app.delete('/products/:id', (req: Request, res: Response) => {
    const productId = req.params.id;
    const deletedProduct = productStorage.remove(productId);
    if ("None" in deletedProduct) {
@@ -130,7 +130,7 @@ app.post('/products', (req, res) => {
  });
 
  //Get all products for a supplier
- app.get('/products/supplier/:idSup', (req, res) => {
+ app.get('/products/supplier/:idSup', (req: Request, res: Response) => {
    const idSup = req.params.idSup;
 
    const supplier = supplierStorage.get(idSup);
